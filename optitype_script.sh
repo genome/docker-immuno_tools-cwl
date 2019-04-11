@@ -11,7 +11,7 @@ echo $TEMPDIR
 # Optitype DNA reference file
 
 #dnaref="/gscmnt/gc6134/cancer-genomics/medseq/shared/Software/Optitype/Data/hla_reference_dna.fasta";
-dnaref="/usr/local/bin/OptiType/data/hla_reference_dna.fasta";
+dnaref="/ref_data/hla_reference_dna.fasta";
 
 # Directory into which to put the fastq files:
 
@@ -40,13 +40,13 @@ sambamba sort --tmpdir $TEMPDIR -n -t 4 -m 8G -o $TEMPDIR/$name.qsorted.bam $TEM
 
 echo running bedtools bamtofastq
 /usr/bin/bedtools bamtofastq -fq $TEMPDIR/$name.q.fwd.fastq -fq2 $TEMPDIR/$name.q.rev.fastq -i $TEMPDIR/$name.qsorted.bam 2>/dev/null;
-ls -l $TEMPDIR/$name.q.fwd.fastq
-ls -l $TEMPDIR/$name.q.rev.fastq
+#ls -l $TEMPDIR/$name.q.fwd.fastq
+#ls -l $TEMPDIR/$name.q.rev.fastq
 #rm -f $TEMPDIR/$name.qsorted.bam;
 
-echo step 0
+#echo step 0
 #0 index the Optitype reference file:
-/usr/local/bin/bwa index $dnaref
+#/usr/local/bin/bwa index $dnaref
 
 echo step 1
 #1 Align forward reads to reference HLA locus sequence
@@ -62,10 +62,10 @@ echo step 3
 # select only the mapped reads from the sam files:
 /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.fwd.sam > $TEMPDIR/$name.aln.map.fwd.sam
 /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.rev.sam > $TEMPDIR/$name.aln.map.rev.sam
-echo output step 3:
-head $TEMPDIR/$name.aln.fwd.sam
-ls -l $TEMPDIR/$name.aln.map.fwd.sam
-ls -l $TEMPDIR/$name.aln.map.rev.sam
+#echo output step 3:
+#head $TEMPDIR/$name.aln.fwd.sam
+#ls -l $TEMPDIR/$name.aln.map.fwd.sam
+#ls -l $TEMPDIR/$name.aln.map.rev.sam
 
 #rm -f $TEMPDIR/$name.aln.fwd.sam
 #rm -f $TEMPDIR/$name.aln.rev.sam

@@ -77,6 +77,15 @@ RUN chmod +x bedtools
 
 COPY optitype_script.sh /usr/bin/optitype_script.sh
 
+#include the optitype hla reference and pre-calculated bwa index outputs
+RUN mkdir /ref_data
+COPY hla_reference_dna.fasta /ref_data/hla_reference_dna.fasta
+COPY hla_reference_dna.fasta.amb /ref_data/hla_reference_dna.fasta.amb
+COPY hla_reference_dna.fasta.ann /ref_data/hla_reference_dna.fasta.ann
+COPY hla_reference_dna.fasta.bwt /ref_data/hla_reference_dna.fasta.bwt
+COPY hla_reference_dna.fasta.pac /ref_data/hla_reference_dna.fasta.pac
+COPY hla_reference_dna.fasta.sa /ref_data/hla_reference_dna.fasta.sa
+
 #clear inherited entrypoint
 ENTRYPOINT []
 CMD []
