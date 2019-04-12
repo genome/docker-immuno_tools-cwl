@@ -1,0 +1,4 @@
+hla_nuc.fasta is a reference file pulled from ftp://ftp.ebi.ac.uk/pub/databases/ipd/imgt/hla/fasta/ on 4/12/2019, file updated on 1/24/19
+if this is used, see license at https://www.ebi.ac.uk/ipd/imgt/hla/licence.html
+
+hla_reference_dna.fasta is the reference file included with optitype as of 4/12/2019

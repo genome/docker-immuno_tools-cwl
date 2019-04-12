@@ -1,3 +1,9 @@
+# $1 is the directory where all intermediate files will be written
+# $2 is the prefix that will be added to all files
+# $3 is the location of the input (normal) cram file
+# $4 is the directory final outputs should be written to
+# $5 for development- a location that toggles which reference will be used, /ref_data/optitype_ref or /ref_data/ebi_ref
+
 #!/bin/bash
 
 # this script accepts as input a sample name, a bam file, and an output directory.  The output directory will contain a new subdirectory based on the "name"
@@ -11,7 +17,7 @@ echo $TEMPDIR
 # Optitype DNA reference file
 
 #dnaref="/gscmnt/gc6134/cancer-genomics/medseq/shared/Software/Optitype/Data/hla_reference_dna.fasta";
-dnaref="/ref_data/hla_reference_dna.fasta";
+dnaref="/ref_data/optitype_ref/hla_reference_dna.fasta";
 
 # Directory into which to put the fastq files:
 
@@ -20,8 +26,8 @@ dnaref="/ref_data/hla_reference_dna.fasta";
 name=$2;
 cram=$3;
 dir=$4;
-echo $name
-echo $cram
+#echo $name
+#echo $cram
 
 # Directory into which Optitype results should be put:
 outdir=$dir/$name;
