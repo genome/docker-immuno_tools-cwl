@@ -4,15 +4,15 @@
 # $2 is the prefix that will be added to all files
 # $3 is the location of the input (normal) cram file
 # $4 is the directory final outputs should be written to
-#bsub -R 'select[mem>64000] rusage[mem=64000]' -e <error_file_name> -o <output_file_name> -q research-hpc -a 'docker(johnegarza/immuno-testing:latest)' /bin/bash /usr/bin/optitype_script.sh <directory where intermediate files will be written> <output file prefix>  <cram path> <final results output directory>
+#bsub -R 'select[mem>64000] rusage[mem=64000]' -e <error_file_name> -o <output_file_name> -q research-hpc -a 'docker(johnegarza/immuno-testing:latest)' /bin/bash /usr/bin/optitype_script.sh <intermediate files directory> <final results directory> <output file prefix>  <cram path>
 
 # Optitype DNA reference file
 dnaref="/ref_data/optitype_ref/hla_reference_dna.fasta";
 
 TEMPDIR=$1
-name=$2;
-cram=$3;
-outdir=$4;
+outdir=$2;
+name=$3;
+cram=$4;
 mkdir -p $outdir
 
 echo Converting cram to bam
