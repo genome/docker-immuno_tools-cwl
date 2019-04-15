@@ -52,4 +52,7 @@ rm -f $TEMPDIR/$name.aln.map.rev.sam
 
 echo step 5: run Optitype
 # run optitype 
-python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v --outdir $outdir
+python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
+
+#make sure files actually end up in $outdir and not $outdir/<timestamp>, which is where optitype puts them
+mv $outdir/*/* $outdir
