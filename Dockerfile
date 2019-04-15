@@ -86,12 +86,6 @@ COPY hla_reference_dna.fasta.ann /ref_data/optitype_ref/hla_reference_dna.fasta.
 COPY hla_reference_dna.fasta.bwt /ref_data/optitype_ref/hla_reference_dna.fasta.bwt
 COPY hla_reference_dna.fasta.pac /ref_data/optitype_ref/hla_reference_dna.fasta.pac
 COPY hla_reference_dna.fasta.sa /ref_data/optitype_ref/hla_reference_dna.fasta.sa
-COPY hla_nuc.fasta /ref_data/ebi_ref/hla_nuc.fasta
-COPY hla_nuc.fasta.amb /ref_data/ebi_ref/hla_nuc.fasta.amb
-COPY hla_nuc.fasta.ann /ref_data/ebi_ref/hla_nuc.fasta.ann
-COPY hla_nuc.fasta.bwt /ref_data/ebi_ref/hla_nuc.fasta.bwt
-COPY hla_nuc.fasta.pac /ref_data/ebi_ref/hla_nuc.fasta.pac
-COPY hla_nuc.fasta.sa /ref_data/ebi_ref/hla_nuc.fasta.sa
 
 #clear inherited entrypoint
 ENTRYPOINT []
