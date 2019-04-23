@@ -45,11 +45,11 @@ rm -f $TEMPDIR/$name.aln.fwd.sam
 rm -f $TEMPDIR/$name.aln.rev.sam
 
 echo Convert sam files to fastq files, also stored in temp dir
-cat $TEMPDIR/$name.aln.map.fwd.sam | grep -v ^@ | awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.fwd.fastq
-cat $TEMPDIR/$name.aln.map.rev.sam | grep -v ^@ | awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.rev.fastq
+cat $TEMPDIR/$name.aln.map.fwd.sam | grep -v ^@ | /usr/bin/awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.fwd.fastq
+cat $TEMPDIR/$name.aln.map.rev.sam | grep -v ^@ | /usr/bin/awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.rev.fastq
 rm -f $TEMPDIR/$name.aln.map.fwd.sam
 rm -f $TEMPDIR/$name.aln.map.rev.sam
 
 echo step 5: run Optitype
 # run optitype 
-python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v --outdir $outdir
+python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
