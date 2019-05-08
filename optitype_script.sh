@@ -15,6 +15,7 @@ TEMPDIR=$1
 outdir=$2;
 name=$3;
 cram=$4;
+mkdir -p $TEMPDIR
 mkdir -p $outdir
 
 echo Converting cram to bam
