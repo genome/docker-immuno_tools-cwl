@@ -1,22 +1,27 @@
 #!/bin/bash
 
 # $1 is the directory where all intermediate files will be written
-# $2 is the prefix that will be added to all files
-# $3 is the location of the input (normal) cram file
-# $4 is the directory final outputs should be written to
+# $2 is the directory final outputs should be written to
+# $3 is the prefix that will be added to all files
+# $4 is the location of the input (normal) cram file
+# $5 is the reference file used to create the cram
 #bsub -R 'select[mem>64000] rusage[mem=64000]' -e <error_file_name> -o <output_file_name> -q research-hpc -a 'docker(johnegarza/immuno-testing:latest)' /bin/bash /usr/bin/optitype_script.sh <intermediate files directory> <final results directory> <output file prefix>  <cram path>
+
+set -e -o pipefail
 
 # Optitype DNA reference file
 dnaref="/ref_data/optitype_ref/hla_reference_dna.fasta";
 
-TEMPDIR=$1
-outdir=$2;
-name=$3;
-cram=$4;
+TEMPDIR="$1";
+outdir="$2";
+name="$3";
+cram="$4";
+reference="$5";
+mkdir -p $TEMPDIR
 mkdir -p $outdir
 
 echo Converting cram to bam
-/opt/samtools/bin/samtools view -b $cram > $TEMPDIR/$name.unsorted.bam
+/opt/samtools/bin/samtools view -b -T $reference $cram > $TEMPDIR/$name.unsorted.bam
 
 echo Sorting bam
 sambamba sort --tmpdir $TEMPDIR -n -t 4 -m 8G -o $TEMPDIR/$name.qsorted.bam $TEMPDIR/$name.unsorted.bam  ## 4-threaded replacement sorting with sambamba:
@@ -52,4 +57,4 @@ rm -f $TEMPDIR/$name.aln.map.rev.sam
 
 echo step 5: run Optitype
 # run optitype 
-python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
+/usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
