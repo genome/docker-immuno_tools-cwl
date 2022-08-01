@@ -29,35 +29,47 @@ if [ ${7:-$DEFAULT_MEM} -eq 1 ]; then MEM=1G; else MEM="$((${7:-$DEFAULT_MEM}*$M
 mkdir -p $TEMPDIR
 mkdir -p $outdir
 
-echo "Step 1: Converting cram to bam"
-echo "[INFO] /opt/samtools/bin/samtools view -b -T $reference $cram > $TEMPDIR/$name.unsorted.bam"
-time /opt/samtools/bin/samtools view -b -T $reference $cram > $TEMPDIR/$name.unsorted.bam
+echo "Step 1: extracting hla region from chr6, reads to alternate HLA sequences, and all unmapped reads ..."
 
-echo "Step 2: Sorting bam"
-echo "[INFO] sambamba sort --tmpdir $TEMPDIR -n -t $THREADS -m $MEM -o $TEMPDIR/$name.qsorted.bam $TEMPDIR/$name.unsorted.bam"
-time sambamba sort --tmpdir $TEMPDIR -n -t $THREADS -m $MEM -o $TEMPDIR/$name.qsorted.bam $TEMPDIR/$name.unsorted.bam  ## 4-threaded replacement sorting with sambamba:
-rm -f $TEMPDIR/$name.unsorted.bam
+# filter out reads directly from an existing CRAM file of alignments, only those reads that align to this region: chr6:29836259-33148325
+echo "[INFO] /opt/samtools/bin/samtools view -h -T $reference $cram chr6:29836259-33148325 >$TEMPDIR/reads.sam"
+time /opt/samtools/bin/samtools view -h -T $reference $cram chr6:29836259-33148325 >$TEMPDIR/reads.sam
 
-echo "Step 3: Running bedtools bamtofastq"
-echo "[INFO] /usr/bin/bedtools bamtofastq -fq $TEMPDIR/$name.q.fwd.fastq -fq2 $TEMPDIR/$name.q.rev.fastq -i $TEMPDIR/$name.qsorted.bam 2>/dev/null"
-time /usr/bin/bedtools bamtofastq -fq $TEMPDIR/$name.q.fwd.fastq -fq2 $TEMPDIR/$name.q.rev.fastq -i $TEMPDIR/$name.qsorted.bam 2>/dev/null;
-rm -f $TEMPDIR/$name.qsorted.bam;
+# pull out only the *header* lines from the CRAM with the -H parameter. then get the sequence names and for those that match the string "HLA" do the following
+echo "[INFO] /opt/samtools/bin/samtools view -H -T $reference $cram | grep "^@SQ" | cut -f 2 | cut -f 2- -d : | grep HLA | while read chr;do ..."
+time /opt/samtools/bin/samtools view -H -T $reference $cram | grep "^@SQ" | cut -f 2 | cut -f 2- -d : | grep HLA | while read chr;do 
+# echo "checking $chr:1-9999999"
+# grab all the reads that align to each alternate "HLA" sequence
+/opt/samtools/bin/samtools view -T $reference $cram "$chr:1-9999999" >>$TEMPDIR/reads.sam
+done
+
+# grab all the reads that are unaligned
+echo "[INFO]  /opt/samtools/bin/samtools view -f 4 -T $reference $cram >>$TEMPDIR/reads.sam"
+time /opt/samtools/bin/samtools view -f 4 -T $reference $cram >>$TEMPDIR/reads.sam
+# covert from .sam to .bam format
+echo "[INFO] /opt/samtools/bin/samtools view -Sb -o $TEMPDIR/reads.bam $TEMPDIR/reads.sam"
+time /opt/samtools/bin/samtools view -Sb -o $TEMPDIR/reads.bam $TEMPDIR/reads.sam 
+
+echo "Step 2: running picard ..."
+echo "[INFO] /usr/bin/java -Xmx6g -jar /usr/picard/picard.jar SamToFastq VALIDATION_STRINGENCY=LENIENT F=$TEMPDIR/$name.q.fwd.fastq.gz F2=$TEMPDIR/$name.q.rev.fastq.gz I=$TEMPDIR/reads.bam R=$reference FU=$TEMPDIR/unpaired.fastq.gz"
+time /usr/bin/java -Xmx6g -jar /usr/picard/picard.jar SamToFastq VALIDATION_STRINGENCY=LENIENT F=$TEMPDIR/$name.q.fwd.fastq.gz F2=$TEMPDIR/$name.q.rev.fastq.gz I=$TEMPDIR/reads.bam R=$reference FU=$TEMPDIR/unpaired.fastq.gz
+
 
 #echo step 0
 #0 index the Optitype reference file:
 #/usr/local/bin/bwa index $dnaref
 
-echo "Step 4: Aligning forward reads to reference HLA locus sequence"
-echo "[INFO] /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.fwd.fastq > $TEMPDIR/$name.aln.fwd.sam"
-time /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.fwd.fastq > $TEMPDIR/$name.aln.fwd.sam # use bwa mem, store output IN TEMP, and skip samse step
-rm -f $TEMPDIR/$name.q.fwd.fastq;
+echo "Step 3: Aligning forward reads to reference HLA locus sequence"
+echo "[INFO] /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.fwd.fastq.gz > $TEMPDIR/$name.aln.fwd.sam"
+time /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.fwd.fastq.gz > $TEMPDIR/$name.aln.fwd.sam # use bwa mem, store output IN TEMP, and skip samse step
+rm -f $TEMPDIR/$name.q.fwd.fastq.gz;
 
-echo "Step 5: Aligning reverse reads to reference HLA locus sequence"
-echo "[INFO] /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.rev.fastq > $TEMPDIR/$name.aln.rev.sam"
-time /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.rev.fastq > $TEMPDIR/$name.aln.rev.sam # use bwa mem, store output IN TEMP, and skip samse step
-rm -f $TEMPDIR/$name.q.rev.fastq
+echo "Step 4: Aligning reverse reads to reference HLA locus sequence"
+echo "[INFO] /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.rev.fastq.gz > $TEMPDIR/$name.aln.rev.sam"
+time /usr/local/bin/bwa mem -t $THREADS $dnaref $TEMPDIR/$name.q.rev.fastq.gz > $TEMPDIR/$name.aln.rev.sam # use bwa mem, store output IN TEMP, and skip samse step
+rm -f $TEMPDIR/$name.q.rev.fastq.gz
 
-echo "Step 6: Select only the mapped reads from the sam files:"
+echo "Step 5: Select only the mapped reads from the sam files:"
 echo "[INFO] /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.fwd.sam > $TEMPDIR/$name.aln.map.fwd.sam"
 time /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.fwd.sam > $TEMPDIR/$name.aln.map.fwd.sam
 echo "[INFO] /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.rev.sam > $TEMPDIR/$name.aln.map.rev.sam"
@@ -65,13 +77,13 @@ time /opt/samtools/bin/samtools view -S -F 4 $TEMPDIR/$name.aln.rev.sam > $TEMPD
 rm -f $TEMPDIR/$name.aln.fwd.sam
 rm -f $TEMPDIR/$name.aln.rev.sam
 
-echo "Step 7: Convert sam files to fastq files, also stored in temp dir"
+echo "Step 6: Convert sam files to fastq files, also stored in temp dir"
 time cat $TEMPDIR/$name.aln.map.fwd.sam | grep -v ^@ | /usr/bin/awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.fwd.fastq
 time cat $TEMPDIR/$name.aln.map.rev.sam | grep -v ^@ | /usr/bin/awk '{print "@"$1"\n"$10"\n+\n"$11}' > $outdir/$name.hla.rev.fastq
 rm -f $TEMPDIR/$name.aln.map.fwd.sam
 rm -f $TEMPDIR/$name.aln.map.rev.sam
 
-echo "Step 8: run Optitype"
+echo "Step 7: run Optitype"
 # run optitype
 echo "[INFO] /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir" 
-time /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
+time /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name".hla.fwd.fastq" $outdir/$name".hla.rev.fastq" --dna -v -p $name -o $outdir
