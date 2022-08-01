@@ -86,4 +86,4 @@ rm -f $TEMPDIR/$name.aln.map.rev.sam
 echo "Step 7: run Optitype"
 # run optitype
 echo "[INFO] /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir" 
-time /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name".hla.fwd.fastq" $outdir/$name".hla.rev.fastq" --dna -v -p $name -o $outdir
+time /usr/bin/python /usr/local/bin/OptiType/OptiTypePipeline.py -i $outdir/$name.hla.fwd.fastq $outdir/$name.hla.rev.fastq --dna -v -p $name -o $outdir
