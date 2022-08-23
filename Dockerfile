@@ -76,6 +76,18 @@ RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.28.0/bedtools
 RUN chmod +x bedtools
 
 COPY optitype_script.sh /usr/bin/optitype_script.sh
+COPY optitype_script_wdl.sh /usr/bin/optitype_script_wdl.sh
+
+###############
+#Picard 2.18.1#
+###############
+ADD https://github.com/broadinstitute/picard/releases/download/2.18.1/picard.jar ./
+RUN mkdir /opt/picard-2.18.1
+RUN chmod -R ugo+r /opt/picard-2.18.1
+RUN mv picard.jar /opt/picard-2.18.1
+RUN chmod -R ugo+r /opt/picard-2.18.1/picard.jar
+RUN ln -s /opt/picard-2.18.1 /opt/picard
+RUN ln -s /opt/picard-2.18.1 /usr/picard 
 
 #include the optitype hla reference and pre-calculated bwa index outputs
 RUN mkdir -p /ref_data/optitype_ref
